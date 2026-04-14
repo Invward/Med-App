@@ -26,12 +26,14 @@ class InferenceState {
     InferenceStatus? status,
     Map<String, dynamic>? result,
     String? error,
+    bool clearError = false,
+    bool clearResult = false,
     File? imageFile,
   }) {
     return InferenceState(
       status: status ?? this.status,
-      result: result ?? this.result,
-      error: error ?? this.error,
+      result: clearResult ? null : (result ?? this.result),
+      error: clearError ? null : (error ?? this.error),
       imageFile: imageFile ?? this.imageFile,
     );
   }
@@ -41,8 +43,10 @@ class InferenceNotifier extends StateNotifier<InferenceState> {
   InferenceNotifier() : super(const InferenceState());
 
   Future<void> analyze(File imageFile) async {
-    state = InferenceState(
+    state = state.copyWith(
       status: InferenceStatus.running,
+      clearError: true,
+      clearResult: true,
       imageFile: imageFile,
     );
     try {
@@ -50,19 +54,36 @@ class InferenceNotifier extends StateNotifier<InferenceState> {
       state = state.copyWith(
         status: InferenceStatus.done,
         result: result,
+        clearError: true,
       );
       // Save to history
       await _saveToHistory(imageFile, result);
     } catch (e) {
       state = state.copyWith(
         status: InferenceStatus.error,
-        error: e.toString(),
+        clearResult: true,
+        error: _toReadableError(e),
       );
     }
   }
 
   void reset() {
     state = const InferenceState();
+  }
+
+  String _toReadableError(Object error) {
+    final message = error.toString();
+    if (message.contains('Unexpected input tensor') ||
+        message.contains('Unexpected output tensor')) {
+      return 'Model schema mismatch. Please reinstall/update the app model.';
+    }
+    if (message.contains('Failed to decode image')) {
+      return 'Could not read this image. Please choose another photo.';
+    }
+    if (message.contains('Interpreter is not initialized')) {
+      return 'Model is not loaded yet. Please try again in a moment.';
+    }
+    return 'Analysis failed: $message';
   }
 
   Future<void> _saveToHistory(
@@ -110,12 +131,12 @@ final historyProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
 
 // ─── Model loading ──────────────────────────────────────────────────────────
 
-final modelLoadedProvider = FutureProvider<bool>((ref) async {
+final modelLoadedProvider = FutureProvider<String?>((ref) async {
   try {
     await ModelService.loadModel();
-    return true;
+    return null;
   } catch (e) {
-    return false;
+    return e.toString();
   }
 });
 

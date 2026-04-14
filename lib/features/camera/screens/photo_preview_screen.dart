@@ -17,6 +17,7 @@ class PhotoPreviewScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final inference = ref.watch(inferenceProvider);
     final isAnalyzing = inference.status == InferenceStatus.running;
+    final hasError = inference.status == InferenceStatus.error;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -156,6 +157,33 @@ class PhotoPreviewScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
+                if (hasError) ...[
+                  _InferenceErrorCard(
+                    message: inference.error ??
+                        'Analysis failed. Please try a different photo.',
+                    onRetry: imageFile == null
+                        ? null
+                        : () async {
+                            await ref
+                                .read(inferenceProvider.notifier)
+                                .analyze(imageFile!);
+                            if (!context.mounted) return;
+                            final latest = ref.read(inferenceProvider);
+                            if (latest.status == InferenceStatus.done &&
+                                latest.result != null) {
+                              context.push(
+                                AppRoutes.results,
+                                extra: {
+                                  'imageFile': imageFile,
+                                  'result': latest.result,
+                                },
+                              );
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
                 if (isAnalyzing)
                   const _AnalyzingIndicator()
                 else ...[
@@ -168,8 +196,20 @@ class PhotoPreviewScreen extends ConsumerWidget {
                                 .read(inferenceProvider.notifier)
                                 .analyze(imageFile!);
                             if (context.mounted) {
-                              final result =
-                                  ref.read(inferenceProvider).result;
+                              final latest = ref.read(inferenceProvider);
+                              final result = latest.result;
+                              if (latest.status != InferenceStatus.done ||
+                                  result == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      latest.error ??
+                                          'Analysis failed. Please try another photo.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
                               context.push(
                                 AppRoutes.results,
                                 extra: {
@@ -212,6 +252,67 @@ class PhotoPreviewScreen extends ConsumerWidget {
 
                 const SizedBox(height: 100),
               ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InferenceErrorCard extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const _InferenceErrorCard({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.errorContainer.withOpacity(0.45),
+        borderRadius: AppRadius.xl2,
+        border: Border.all(color: AppColors.error.withOpacity(0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.error,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Could not analyze image',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.error,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry analysis'),
             ),
           ),
         ],
