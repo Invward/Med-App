@@ -106,46 +106,10 @@ class ResultsScreen extends StatelessWidget {
 
                 // Primary CTA
                 GradientButton(
-                  label: 'View First Aid Guidance',
+                  label: 'Scan Another Burn',
                   icon: Icons.arrow_forward_rounded,
-                  onPressed: () =>
-                      context.push(AppRoutes.firstAid, extra: degree),
+                  onPressed: () => context.go(AppRoutes.camera),
                 ),
-
-                if (needsHospital) ...[
-                  const SizedBox(height: 12),
-                  GestureDetector(
-                    onTap: () => context.push(AppRoutes.medicalAdvice),
-                    child: Container(
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppColors.errorContainer.withOpacity(0.4),
-                        borderRadius: AppRadius.xl2,
-                        border: Border.all(
-                          color: AppColors.error.withOpacity(0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.local_hospital_rounded,
-                              color: AppColors.error),
-                          SizedBox(width: 10),
-                          Text(
-                            'Medical Advice & Hospitalization',
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.error,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
 
                 const SizedBox(height: 24),
 

@@ -49,7 +49,7 @@ class _CameraScreenState extends State<CameraScreen> {
       }
       _controller = CameraController(
         _cameras.first,
-        ResolutionPreset.high,
+        ResolutionPreset.medium,
         enableAudio: false,
       );
       await _controller!.initialize();
@@ -73,11 +73,13 @@ class _CameraScreenState extends State<CameraScreen> {
         context.push(AppRoutes.photoPreview, extra: File(xFile.path));
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
   }
+
 
   Future<void> _pickFromGallery() async {
     final picker = ImagePicker();
@@ -301,7 +303,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         await _controller!.dispose();
                         _controller = CameraController(
                           next,
-                          ResolutionPreset.high,
+                          ResolutionPreset.medium,
                           enableAudio: false,
                         );
                         await _controller!.initialize();

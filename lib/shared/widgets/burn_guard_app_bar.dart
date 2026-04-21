@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/router/app_router.dart';
 
 class BurnGuardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -72,14 +71,7 @@ class BurnGuardAppBar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ],
           ),
-          actions: [
-            ...?actions,
-            IconButton(
-              icon: const Icon(Icons.info_outline_rounded),
-              color: const Color(0xFF94A3B8),
-              onPressed: () => context.push(AppRoutes.settings),
-            ),
-          ],
+          actions: actions,
         ),
       ),
     );

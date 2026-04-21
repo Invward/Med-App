@@ -1,5 +1,6 @@
 // lib/core/router/app_router.dart
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/home/screens/home_screen.dart';

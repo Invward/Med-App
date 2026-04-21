@@ -42,7 +42,9 @@ class InferenceState {
 class InferenceNotifier extends StateNotifier<InferenceState> {
   InferenceNotifier() : super(const InferenceState());
 
-  Future<void> analyze(File imageFile) async {
+  Future<void> analyze(
+    File imageFile,
+  ) async {
     state = state.copyWith(
       status: InferenceStatus.running,
       clearError: true,
@@ -112,6 +114,32 @@ class InferenceNotifier extends StateNotifier<InferenceState> {
 final inferenceProvider =
     StateNotifierProvider<InferenceNotifier, InferenceState>(
   (ref) => InferenceNotifier(),
+);
+
+// ─── Model Selection ─────────────────────────────────────────────────────────
+
+class ModelOption {
+  final String id;
+  final String name;
+  final String assetPath;
+
+  const ModelOption({
+    required this.id,
+    required this.name,
+    required this.assetPath,
+  });
+}
+
+const availableModels = <ModelOption>[
+  ModelOption(
+    id: 'burn_model_float32',
+    name: 'EfficientNetV2-S Burn Classifier',
+    assetPath: 'assets/models/burn_model_float32.tflite',
+  ),
+];
+
+final selectedModelProvider = StateProvider<ModelOption>(
+  (ref) => availableModels.first,
 );
 
 // ─── History ────────────────────────────────────────────────────────────────

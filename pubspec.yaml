@@ -50,5 +50,5 @@ flutter:
         - asset: assets/fonts/Inter-Bold.ttf
           weight: 700
   assets:
-    - assets/models/model_ver2.tflite
+    - assets/models/
     - assets/fonts/
